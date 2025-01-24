@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        table {
+            margin-top: 20px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Records</h1>
+    <form id="searchForm">
+        <table>
+            <tr>
+                <td>Search by Name:</td>
+                <td><input type="text" id="searchName"></td>
+            </tr>
+            <tr>
+                <td>Search by Flight Number:</td>
+                <td><input type="text" id="searchFlightNumber"></td>
+            </tr>
+        </table>
+        <button type="submit">Search</button>
+    </form>
+
+    <div class="message" id="message"></div> <!-- Area para los mensajes -->
+
+    <h2>Search Results</h2>
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Flight Number</th>
+                <th>Date</th>
+                <th>Seat Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los registros encontrados se insertarán aquí dinámicamente -->
+        </tbody>
+    </table>
+
+    <!-- Botón Volver -->
+    <button onclick="location.href='index.html'">Volver</button>
+
+    <script>
+        const API_URL = "http://localhost:3000/pasajeros"; // Cambiar a tu URL de backend
+
+        // Función para mostrar mensajes
+        function showMessage(message, isSuccess) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.classList.remove('success');
+            messageDiv.classList.remove('error');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+
+            if (isSuccess) {
+                messageDiv.classList.add('success');
+            } else {
+                messageDiv.classList.add('error');
+            }
+        }
+
+        // Función para buscar registros por nombre o número de vuelo
+        async function searchRecords(name, flightNumber) {
+            const tbody = document.querySelector("#resultsTable tbody");
+            tbody.innerHTML = ""; // Limpiar la tabla antes de mostrar los resultados
+
+            // Construir la URL de búsqueda
+            let url = `${API_URL}?`;
+            if (name) url += `nombre=${encodeURIComponent(name)}&`;
+            if (flightNumber) url += `numero_vuelo=${encodeURIComponent(flightNumber)}`;
+
+            // Realizar la solicitud GET al backend
+            try {
+                const response = await fetch(url);
+                const records = await response.json();
+
+                if (records.length === 0) {
+                    showMessage("No se encontraron registros.", false);
+                } else {
+                    records.forEach(record => {
+                        const row = `<tr>
+                            <td>${record.id}</td>
+                            <td>${record.nombre}</td>
+                            <td>${record.numero_vuelo}</td>
+                            <td>${record.fecha}</td>
+                            <td>${record.numero_asiento}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                    showMessage("Búsqueda completada con éxito.", true);
+                }
+            } catch (error) {
+                showMessage("Ocurrió un error al buscar los registros.", false);
+                console.error("Error:", error);
+            }
+        }
+
+        // Lógica para manejar el formulario de búsqueda
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevenir el envío real del formulario
+            const name = document.getElementById('searchName').value.trim();
+            const flightNumber = document.getElementById('searchFlightNumber').value.trim();
+
+            if (!name && !flightNumber) {
+                showMessage("Por favor ingrese al menos un campo de búsqueda.", false);
+            } else {
+                searchRecords(name, flightNumber);
+            }
+        });
+    </script>
+</body>
+</html>

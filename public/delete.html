@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Record</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Delete Record</h1>
+    <form id="deleteForm">
+        <table>
+            <tr>
+                <td>Delete by ID:</td>
+                <td><input type="text" name="id" id="deleteId"></td>
+            </tr>
+        </table>
+        <button type="submit">Delete</button>
+    </form>
+
+    <div class="message" id="message"></div> <!-- Area para los mensajes -->
+
+    <!-- Botón Volver -->
+    <button onclick="location.href='index.html'">Volver</button>
+
+    <script>
+        // Función para mostrar mensajes
+        function showMessage(message, isSuccess) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.classList.remove('success');
+            messageDiv.classList.remove('error');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+
+            if (isSuccess) {
+                messageDiv.classList.add('success');
+            } else {
+                messageDiv.classList.add('error');
+            }
+        }
+
+        // Lógica para manejar el formulario
+        document.getElementById('deleteForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevenir el envío real del formulario
+            const id = document.getElementById('deleteId').value;
+
+            if (!id) {
+                showMessage("Faltan campos por llenar.", false); // Error si no se ingresa el ID
+            } else {
+                try {
+                    // Hacer una solicitud DELETE para eliminar el registro
+                    const response = await fetch(`http://localhost:3000/pasajeros/${id}`, {
+                        method: 'DELETE',
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage("El registro ha sido eliminado correctamente.", true); // Mensaje de éxito
+                    } else {
+                        showMessage(data.message || "Error al eliminar el registro.", false); // Mensaje de error
+                    }
+                } catch (error) {
+                    showMessage("Hubo un problema al eliminar el registro.", false);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

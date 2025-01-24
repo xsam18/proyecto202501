@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Record</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Update Existing Record</h1>
+    <form id="updateForm">
+        <table>
+            <tr>
+                <td>Search by ID:</td>
+                <td><input type="text" name="id" id="updateId" required></td>
+            </tr>
+            <tr>
+                <td>New Name:</td>
+                <td><input type="text" name="newName" id="newName" required></td>
+            </tr>
+            <tr>
+                <td>New Flight Number:</td>
+                <td><input type="text" name="newFlightNumber" id="newFlightNumber" required></td>
+            </tr>
+        </table>
+        <button type="submit">Update</button>
+    </form>
+
+    <div class="message" id="message"></div> <!-- Área para los mensajes -->
+
+    <!-- Botón Volver -->
+    <button onclick="location.href='index.html'">Volver</button>
+
+    <script>
+        // Función para mostrar mensajes
+        function showMessage(message, isSuccess) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.classList.remove('success');
+            messageDiv.classList.remove('error');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+
+            if (isSuccess) {
+                messageDiv.classList.add('success');
+            } else {
+                messageDiv.classList.add('error');
+            }
+        }
+
+        // Lógica para manejar el formulario
+        document.getElementById('updateForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevenir el envío real del formulario
+
+            const id = document.getElementById('updateId').value.trim();
+            const newName = document.getElementById('newName').value.trim();
+            const newFlightNumber = document.getElementById('newFlightNumber').value.trim();
+
+            if (!id || !newName || !newFlightNumber) {
+                showMessage("Faltan campos por llenar.", false); // Error si faltan campos
+                return;
+            }
+
+            try {
+                // Hacer una solicitud PUT para actualizar el registro
+                const response = await fetch(`http://localhost:3000/pasajeros/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nombre: newName,
+                        numero_vuelo: newFlightNumber
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage("El registro se ha actualizado correctamente.", true); // Mensaje de éxito
+                } else {
+                    showMessage(data.message || "Error al actualizar el registro.", false); // Mensaje de error
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage("Hubo un problema al actualizar el registro.", false);
+            }
+        });
+    </script>
+</body>
+</html>
